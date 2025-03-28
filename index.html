@@ -22,16 +22,56 @@
       text-align: center;
       z-index: 2;
     }
-    .photo {
+    /* Carrusel de imágenes */
+    .carousel {
+      position: relative;
       width: 300px;
       height: 400px;
+      margin: 0 auto;
+    }
+    .carousel-image {
+      width: 100%;
+      height: 100%;
       border-radius: 20px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none;
+      /* Se muestra inclinada por defecto */
       transform: rotate(-5deg);
-      transition: transform 0.5s ease-in-out;
     }
-    .photo:hover {
+    #artur1,
+    #artur2 {
+    object-fit: cover;
+    }
+    .carousel-image.active {
+      display: block;
+      opacity: 1;
+    }
+    /* Efecto hover para que se enderece y agrande */
+    .carousel-image.active:hover {
       transform: rotate(0deg) scale(1.1);
+    }
+    /* Flechas para navegar, ubicadas dentro de la imagen, en la parte inferior */
+    .carousel-arrow {
+      position: absolute;
+      bottom: 10px;
+      font-size: 1.3rem;
+      background: #25367586;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 50%;
+      color: #dc9207;
+      z-index: 3;
+    }
+    .carousel-arrow.left {
+      left: 10px;
+    }
+    .carousel-arrow.right {
+      right: 10px;
     }
     .message {
       position: absolute;
@@ -127,7 +167,18 @@
 </head>
 <body>
   <div class="container">
-    <img src="alison.jpeg" class="photo" alt="Mi Amor" id="imagenClick" />
+    <!-- Carrusel con flechas internas -->
+    <div class="carousel" id="carousel">
+      <img src="alison1.jpeg" class="carousel-image active" alt="Mi Amor">
+      <img src="alison2.jpeg" class="carousel-image" alt="Mi Amor">
+      <img src="alison3.jpeg" class="carousel-image" alt="Mi Amor">
+      <img src="alison4.jpeg" class="carousel-image" alt="Mi Amor">
+      <img src="artur1.jpg" id="artur1" class="carousel-image" alt="Artur">
+      <img src="artur2.jpg" id="artur2" class="carousel-image" alt="Artur">
+      <img src="artur3.jpg" id="artur2" class="carousel-image" alt="Artur">
+      <button class="carousel-arrow left" id="arrowLeft">&larr;</button>
+      <button class="carousel-arrow right" id="arrowRight">&rarr;</button>
+    </div>
     <div class="message">Te Amo ❤️</div>
   </div>
   
@@ -161,10 +212,10 @@
     });
     
     /* Explosión tipo onda circular */
-    const image = document.getElementById('imagenClick');
-    image.addEventListener('click', (e) => {
+    const carouselContainer = document.getElementById('carousel');
+    carouselContainer.addEventListener('click', (e) => {
       e.stopPropagation();
-      const numWaves = 3;
+      const numWaves = 5;
       const waveDelay = 200; // milisegundos entre cada ola
       for (let j = 0; j < numWaves; j++) {
         setTimeout(() => createCircularWave(e), j * waveDelay);
@@ -191,51 +242,67 @@
         heart.style.setProperty('--tx', `${tx}px`);
         heart.style.setProperty('--ty', `${ty}px`);
       }
-      // Remover el contenedor después de la animación
       setTimeout(() => waveContainer.remove(), 1200);
     }
     
-    /* Botón Sorpresa que aparece en posiciones aleatorias */
+    /***** CARRUSEL CON FLECHAS *****/
+    const carouselImages = document.querySelectorAll('.carousel-image');
+    let currentIndex = 0;
+    const arrowLeft = document.getElementById('arrowLeft');
+    const arrowRight = document.getElementById('arrowRight');
+    
+    function showImage(index) {
+      carouselImages.forEach((img, i) => {
+        if (i === index) {
+          img.classList.add('active');
+        } else {
+          img.classList.remove('active');
+        }
+      });
+    }
+    
+    arrowLeft.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+      showImage(currentIndex);
+    });
+    
+    arrowRight.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentIndex = (currentIndex + 1) % carouselImages.length;
+      showImage(currentIndex);
+    });
+    
+    /***** BOTÓN SORPRESA Y POPUP *****/
     const sorpresaBtn = document.getElementById('sorpresaBtn');
     let randomButtonInterval = setInterval(showRandomButton, 10000);
     
     function showRandomButton() {
-      // Ubicar el botón en una posición aleatoria de la pantalla
-      const btnWidth = 120; // Aproximado, o se puede calcular dinámicamente
+      const btnWidth = 120;
       const btnHeight = 40;
       const maxX = window.innerWidth - btnWidth;
       const maxY = window.innerHeight - btnHeight;
       sorpresaBtn.style.left = Math.random() * maxX + 'px';
       sorpresaBtn.style.top = Math.random() * maxY + 'px';
       
-      // Mostrar el botón por 2 segundos y luego ocultarlo
       sorpresaBtn.style.display = 'block';
       setTimeout(() => {
         sorpresaBtn.style.display = 'none';
       }, 2000);
     }
     
-    /* Popup de mensaje bonito al hacer clic en el botón */
     function showPopup() {
-      // Crear el popup
       const popup = document.createElement('div');
       popup.classList.add('popup');
-      popup.innerHTML = 'Me atrapaste jaja, sabese eres mi sol, mi inspiración y la razón de mi sonrisa. ¡Te amo! ❤️';
+      popup.innerHTML = 'Me atrapaste jaja, sabés que eres mi sol, mi inspiración y la razón de mi sonrisa. ¡Te amo! ❤️';
       document.body.appendChild(popup);
-      
-      // El popup permanece 15 segundos y luego desaparece
-      setTimeout(() => {
-        popup.remove();
-      }, 15000);
+      setTimeout(() => popup.remove(), 15000);
     }
     
-    // Al hacer clic en el botón, se muestra el popup, se elimina el botón y se cancela la aparición futura
     sorpresaBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       showPopup();
-      // Cancelamos el ciclo de aparición del botón
       clearInterval(randomButtonInterval);
-      // Ocultamos el botón de inmediato
       sorpresaBtn.style.display = 'none';
     });
   </script>
